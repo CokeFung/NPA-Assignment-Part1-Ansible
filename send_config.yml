@@ -6,18 +6,10 @@
     data: "{{ lookup('file', 'json/data.json') }}"
     ospf_network: "{{ data.ospf_network }}"
     ip_int_g2: "{{ data['ip_int_g0/2'] }}"
+    dhcp_pool: "{{ data['dhcp_pool'] }}"
 
   tasks:
-    ##### loop create OSPF #####
-    - name: configure OSPF
-      ios_config:
-        lines:
-          - network {{ item }} area 0
-        parents: router ospf 1
-      with_items:
-        - "{{ ospf_network[inventory_hostname] }}"
-
-    ##### loop create interface g0/2 of each router ####
+    #### loop create interface g0/2 of each router ####
     - name: configure ip at g0/2 to all router
       ios_config:
         lines:
@@ -27,20 +19,36 @@
         parents: interface g0/2
       with_items:
         - "{{ ip_int_g2[inventory_hostname] }}"
-      backup: yes
+
+    ##### loop config OSPF #####
+    - name: configure OSPF
+      ios_config:
+        lines:
+          - network {{ item }} area 0
+        parents: router ospf 1
+      with_items:
+        - "{{ ospf_network[inventory_hostname] }}"
+
+    ##### config DHCP #####
+    - name: config service DHCP
+      ios_config:
+        lines: 
+          - service dhcp
+    - name: config dhcp pool
+      ios_config:
+        lines:
+          - network {{ item["network"] }}
+          - default-router {{ item["gw"] }}
+          - dns-server 8.8.8.8
+        parents: ip dhcp pool mypool
+      with_items:
+        - "{{dhcp_pool[inventory_hostname]}}"
+
+    ##### backup running_config #####
+    - name: backup running_config
+      ios_config:
+        backup: yes
         backup_options: #backup runningconfig to text file
-          dir_path: /home/devasc/npa_project
-          filename: run_config.txt
+          dir_path: /home/devasc/npa_project/backup
+          filename: "{{inventory_hostname}}_run_config.txt"
 
-    ##### delete ip on interface #####
-    - name: delete ip
-      ios_config:
-        lines:
-          - no ip add
-        parents: int g0/2
-
-    ##### delete OSPF #####
-    - name: delete OSPF
-      ios_config:
-        lines:
-          - no router ospf 1

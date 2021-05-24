@@ -1,0 +1,26 @@
+---
+- name: send config command
+  hosts: routers
+  gather_facts: false
+
+  tasks:
+    ##### delete ip on interface #####
+    - name: delete ip
+      ios_config:
+        lines:
+          - no ip add
+          - shutdown
+        parents: int g0/2
+
+    ##### delete OSPF #####
+    - name: delete OSPF
+      ios_config:
+        lines:
+          - no router ospf 1
+
+    ##### delete DHCP #####
+    - name: delete DHCP
+      ios_config:
+        lines:
+          - no service dhcp
+          - no ip dhcp pool mypool
