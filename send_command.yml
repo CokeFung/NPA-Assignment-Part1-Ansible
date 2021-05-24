@@ -4,14 +4,15 @@
   gather_facts: false
 
   tasks:
-    - name: multiple command
+    - name: show multiple command
       ios_command:
         commands:
           - sh ip int br
-          - sh ip route
-    
-      register: int_route
+          - sh run | sect ospf
+          - sh run | sect dhcp
+
+      register: results
     
     - name: display
       debug:
-        var: int_route.stdout_lines
+        var: results.stdout_lines
