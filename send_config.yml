@@ -22,8 +22,8 @@
     - name: configure interface settings
       ios_config:
         lines:
-          - no description test config loopback
-          - no ip address 172.31.1.1 255.255.255.255
+          - description test config loopback
+          - ip address 172.31.1.1 255.255.255.255
         parents: interface Loopback1
         backup: yes
         backup_options: #backup runningconfig to text file
