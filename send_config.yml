@@ -2,21 +2,35 @@
 - name: send config command
   hosts: routers
   gather_facts: false
+  vars:
+    ip:
+      - 1.1.1.1
+      - 2.2.2.2
+      - 3.3.3.3
+      - 4.4.4.4
 
   tasks:
+    ##### test loop ####
+    - name: configure loopback1 to all router
+      ios_config:
+        lines:
+          - description test config loopback
+          - ip address {{ ip[groups['routers'].index(inventory_hostname)] }} 255.255.255.255
+        parents: interface Loopback1
+
     #### config interface #####
     - name: configure interface settings
       ios_config:
         lines:
           - no description test config loopback
-          - no ip address 172.31.1.1 255.255.255.0
+          - no ip address 172.31.1.1 255.255.255.255
         parents: interface Loopback1
         backup: yes
         backup_options: #backup runningconfig to text file
           dir_path: /home/devasc/npa_project
           filename: run_config.txt
 
-    ##### delete int #####
+    ##### delete interface #####
     - name: configure interface settings
       ios_config:
         lines:
