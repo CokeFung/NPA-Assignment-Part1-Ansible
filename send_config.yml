@@ -4,17 +4,34 @@
   gather_facts: false
 
   tasks:
-    # - name: configure interface settings
-    #   ios_config:
-    #     lines:
-    #       - description test config loopback
-    #       - ip address 172.31.1.1 255.255.255.0
-    #     parents: interface Loopback1
-    
+    #### config interface #####
+    - name: configure interface settings
+      ios_config:
+        lines:
+          - no description test config loopback
+          - no ip address 172.31.1.1 255.255.255.0
+        parents: interface Loopback1
+        backup: yes
+        backup_options: #backup runningconfig to text file
+          dir_path: /home/devasc/npa_project
+          filename: run_config.txt
+
+    ##### delete int #####
+    - name: configure interface settings
+      ios_config:
+        lines:
+          - no int loop 1
+
+    ##### config OSPF #####
     - name: config routing protocol OSPF
       ios_config:
         lines:
           - network 10.0.15.0 0.0.0.255 area 0
           - network 192.168.99.0 0.0.0.255 area 0
         parents: router ospf 1
-            
+
+    ##### delete OSPF #####
+    - name: no OSPF
+      ios_config:
+        lines:
+          - no router ospf 1
