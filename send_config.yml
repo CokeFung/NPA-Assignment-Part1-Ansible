@@ -3,46 +3,41 @@
   hosts: routers
   gather_facts: false
   vars:
-    ip:
-      - 1.1.1.1
-      - 2.2.2.2
-      - 3.3.3.3
-      - 4.4.4.4
+    data: "{{ lookup('file', 'json/data.json') }}"
+    ospf_network: "{{ data.ospf_network }}"
+    ip_int_g2: "{{ data['ip_int_g0/2'] }}"
 
   tasks:
-    ##### test loop ####
-    - name: configure loopback1 to all router
+    ##### loop create OSPF #####
+    - name: configure OSPF
       ios_config:
         lines:
-          - description test config loopback
-          - ip address {{ ip[groups['routers'].index(inventory_hostname)] }} 255.255.255.255
-        parents: interface Loopback1
+          - network {{ item }} area 0
+        parents: router ospf 1
+      with_items:
+        - "{{ ospf_network[inventory_hostname] }}"
 
-    #### config interface #####
-    - name: configure interface settings
+    ##### loop create interface g0/2 of each router ####
+    - name: configure ip at g0/2 to all router
       ios_config:
         lines:
           - description test config loopback
-          - ip address 172.31.1.1 255.255.255.255
-        parents: interface Loopback1
-        backup: yes
+          - ip address {{ item }}
+          - no shutdown
+        parents: interface g0/2
+      with_items:
+        - "{{ ip_int_g2[inventory_hostname] }}"
+      backup: yes
         backup_options: #backup runningconfig to text file
           dir_path: /home/devasc/npa_project
           filename: run_config.txt
 
-    ##### delete interface #####
-    - name: delete interface
+    ##### delete ip on interface #####
+    - name: delete ip
       ios_config:
         lines:
-          - no int loop 1
-
-    ##### config OSPF #####
-    - name: config routing protocol OSPF
-      ios_config:
-        lines:
-          - network 10.0.15.0 0.0.0.255 area 0
-          - network 192.168.99.0 0.0.0.255 area 0
-        parents: router ospf 1
+          - no ip add
+        parents: int g0/2
 
     ##### delete OSPF #####
     - name: delete OSPF
