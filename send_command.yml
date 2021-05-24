@@ -1,0 +1,17 @@
+---
+- name: Run command and print to terminal window
+  hosts: routers
+  gather_facts: false
+
+  tasks:
+    - name: multiple command
+      ios_command:
+        commands:
+          - sh ip int br
+          - sh ip route
+    
+      register: int_route
+    
+    - name: display
+      debug:
+        var: int_route.stdout_lines
