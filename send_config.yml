@@ -31,7 +31,7 @@
           filename: run_config.txt
 
     ##### delete interface #####
-    - name: configure interface settings
+    - name: delete interface
       ios_config:
         lines:
           - no int loop 1
@@ -45,7 +45,7 @@
         parents: router ospf 1
 
     ##### delete OSPF #####
-    - name: no OSPF
+    - name: delete OSPF
       ios_config:
         lines:
           - no router ospf 1
