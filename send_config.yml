@@ -13,7 +13,7 @@
     - name: configure ip at g0/2 to all router
       ios_config:
         lines:
-          - description test config loopback
+          - description Configure G02 with ansible
           - ip address {{ item }}
           - no shutdown
         parents: interface g0/2
@@ -34,6 +34,7 @@
       ios_config:
         lines: 
           - service dhcp
+      when: inventory_hostname != "R1"
     - name: config dhcp pool
       ios_config:
         lines:
@@ -49,6 +50,6 @@
       ios_config:
         backup: yes
         backup_options: #backup runningconfig to text file
-          dir_path: /home/devasc/npa_project/backup
+          dir_path: ./backup
           filename: "{{inventory_hostname}}_run_config.txt"
 
